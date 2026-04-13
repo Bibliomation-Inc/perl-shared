@@ -1,3 +1,4 @@
+requires 'Archive::Tar';
 requires 'DBD::Pg';
 requires 'DBI';
 requires 'Email::MIME';

@@ -2,8 +2,10 @@
 
 `perl-shared` is a shared utility library for Perl-based automation and data-processing
 scripts. It provides a small set of reusable modules for configuration loading,
-Evergreen database discovery, database access, logging, email, SFTP uploads, and
-array helpers. The goal is to centralize common patterns and best practices in one place so that individual scripts can stay focused on their unique logic.
+Evergreen database discovery, database access, logging, email, SFTP uploads,
+archive creation, file I/O, and array helpers. The goal is to centralize common
+patterns and best practices in one place so that individual scripts can stay
+focused on their unique logic.
 
 ## Install
 
@@ -41,6 +43,40 @@ use lib '/path/to/perl-shared/lib';
 ```
 
 ## Module Overview
+
+### `Bibliomation::Shared::Archive`
+
+Exports:
+
+- `create_tar_gz_archive(%args)`
+
+Required arguments:
+
+- `files`
+- `output_path`
+
+Optional arguments:
+
+- `member_paths`
+- `preserve_paths`
+
+Behavior:
+
+- Creates a gzip-compressed tar archive from one or more local files.
+- Stores file basenames in the archive by default.
+- Supports explicit archive member paths when consumers need stable internal names.
+- Returns the output archive path.
+
+Example:
+
+```perl
+use Bibliomation::Shared::Archive qw(create_tar_gz_archive);
+
+my $archive = create_tar_gz_archive(
+    files       => ['/tmp/report.tsv', '/tmp/summary.tsv'],
+    output_path => '/tmp/export.tar.gz',
+);
+```
 
 ### `Bibliomation::Shared::ArrayUtils`
 
@@ -228,6 +264,37 @@ send_email(
     subject   => 'Nightly Export Complete',
     text_body => "The export completed successfully.\n",
     html_body => '<p>The export completed successfully.</p>',
+);
+```
+
+### `Bibliomation::Shared::FileIO`
+
+Exports:
+
+- `read_text_file($path)`
+- `write_text_file(%args)`
+- `append_text_file(%args)`
+- `write_delimited_file(%args)`
+
+Behavior:
+
+- Reads and writes plain text files.
+- Writes delimited text output such as TSV or CSV.
+- Supports optional headers, UTF-8 output, newline sanitization, and field quoting.
+- Returns the target file path from write operations.
+
+Example:
+
+```perl
+use Bibliomation::Shared::FileIO qw(write_delimited_file);
+
+my $path = write_delimited_file(
+    path    => '/tmp/export.tsv',
+    columns => [qw(id name)],
+    rows    => [
+        [1, 'Alpha'],
+        [2, 'Beta'],
+    ],
 );
 ```
 
