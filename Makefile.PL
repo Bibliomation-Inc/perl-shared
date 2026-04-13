@@ -4,11 +4,12 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME         => 'Bibliomation::Shared',
-    VERSION      => '0.001',
+    VERSION      => '0.002',
     ABSTRACT     => 'Shared Perl modules for Bibliomation projects',
     AUTHOR       => 'Bibliomation',
     LICENSE      => 'perl',
     PREREQ_PM    => {
+        'DBD::Pg'               => 0,
         'DBI'                   => 0,
         'Email::MIME'           => 0,
         'Email::Sender::Simple' => 0,

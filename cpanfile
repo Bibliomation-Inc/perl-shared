@@ -1,3 +1,4 @@
+requires 'DBD::Pg';
 requires 'DBI';
 requires 'Email::MIME';
 requires 'Email::Sender::Simple';

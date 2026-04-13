@@ -1,4 +1,12 @@
 Revision history for perl-shared
 
+0.002  2026-04-13
+    - Standardized all shared modules under the Bibliomation::Shared namespace.
+    - Expanded README documentation for downstream consumers.
+    - Added Evergreen, logging, and email behavior tests.
+    - Improved Database SQL-file handling and chunked query parameter binding.
+    - Added multipart email support and richer logging helpers.
+    - Declared DBD::Pg as an explicit runtime dependency.
+
 0.001  2026-04-13
     - Initial scaffold for shared modules.

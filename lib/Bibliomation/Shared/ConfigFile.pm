@@ -20,11 +20,12 @@ sub load_config {
     while (my $line = <$fh>) {
         $line_num++;
         chomp $line;
+        $line =~ s/\r$//;
 
         next if $line =~ /^\s*#/;
         next if $line =~ /^\s*$/;
 
-        if ($line =~ /^\s*(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))\s*$/) {
+        if ($line =~ /^\s*([A-Za-z_][A-Za-z0-9_.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))\s*$/) {
             my ($key, $val) = ($1, defined $2 ? $2 : defined $3 ? $3 : $4);
             $config{$key} = $val;
         } else {

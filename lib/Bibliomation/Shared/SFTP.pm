@@ -26,10 +26,22 @@ sub sftp_upload {
     my $password   = $args{password}   or die "sftp_upload: 'password' is required\n";
     my $remote_dir = $args{remote_dir} or die "sftp_upload: 'remote_dir' is required\n";
     my $files      = $args{files}      or die "sftp_upload: 'files' is required\n";
+    my $port       = $args{port};
 
     my @local_files = ref($files) eq 'ARRAY' ? @$files : ($files);
+    die "sftp_upload: 'files' must include at least one path\n" unless @local_files;
 
-    my $sftp = Net::SFTP::Foreign->new($host, user => $user, password => $password);
+    for my $local_file (@local_files) {
+        die "sftp_upload: local file not found: $local_file\n" unless -f $local_file;
+    }
+
+    my %connection_args = (
+        user     => $user,
+        password => $password,
+    );
+    $connection_args{port} = $port if defined $port;
+
+    my $sftp = Net::SFTP::Foreign->new($host, %connection_args);
     die "SFTP connection to $host failed: " . $sftp->error . "\n" if $sftp->error;
 
     my @uploaded;

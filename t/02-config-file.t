@@ -15,6 +15,8 @@ port = 5432
 user = "evergreen"
 password = 'secret'
 blank = value
+smtp-host = mail.example.org
+config.version = 1
 CFG
 close $fh;
 
@@ -24,6 +26,8 @@ is($cfg->{port}, '5432', 'parses numeric-like value as string');
 is($cfg->{user}, 'evergreen', 'parses double-quoted value');
 is($cfg->{password}, 'secret', 'parses single-quoted value');
 is($cfg->{blank}, 'value', 'parses additional key');
+is($cfg->{'smtp-host'}, 'mail.example.org', 'parses hyphenated keys');
+is($cfg->{'config.version'}, '1', 'parses dotted keys');
 
 like(
     exception { load_config('definitely_missing_file.conf') },

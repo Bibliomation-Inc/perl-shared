@@ -62,12 +62,23 @@ my $affected = run_sql('UPDATE users SET active = ? WHERE id > ?', 0, 100);
 is($affected, 3, 'run_sql returns row count for non-result statements');
 
 my ($sql_fh, $sql_path) = tempfile();
-print {$sql_fh} "SELECT id FROM source WHERE group_id = ?\n";
+print {$sql_fh} <<'SQL';
+/*
+ * report query
+ */
+BEGIN;
+-- only active rows
+SELECT id FROM source WHERE group_id = ?
+ROLLBACK;
+SQL
 close $sql_fh;
 
 $dbh->queue_prepare(sub {
     my ($self, $sql) = @_;
-    like($sql, qr/SELECT\s+id\s+FROM\s+source/i, 'run_sql_file loads SQL from file');
+    unlike($sql, qr/\bBEGIN\b/i, 'run_sql_file strips transaction wrappers');
+    unlike($sql, qr/\bROLLBACK\b/i, 'run_sql_file strips trailing wrappers');
+    unlike($sql, qr/report query|only active rows/i, 'run_sql_file strips SQL comments');
+    like($sql, qr/\ASELECT\s+id\s+FROM\s+source\s+WHERE\s+group_id\s*=\s*\?\z/i, 'run_sql_file prepares cleaned SQL');
     return MockSTH->select_hash_rows([{ id => 9 }]);
 });
 
@@ -95,10 +106,10 @@ is_deeply(\@id_chunks, [[1, 2], [3, 4], [5]], 'stream_id_chunks emits expected c
 
 $dbh->queue_prepare(sub {
     my ($self, $sql) = @_;
-    like($sql, qr/IN\s*\(\?,\?,\?\)/, 'run_query_for_ids expands token into placeholders');
+    like($sql, qr/flag\s*=\s*\?\s+AND\s+id\s+IN\s*\(\?,\?,\?\)\s+AND\s+trailer\s*=\s*\?/i, 'run_query_for_ids preserves placeholder order around expanded token');
     return MockSTH->array_rows_from_execute(sub {
         my (@bind) = @_;
-        is_deeply(\@bind, [10, 20, 30, 99], 'run_query_for_ids binds ids then additional params');
+        is_deeply(\@bind, [99, 10, 20, 30, 123], 'run_query_for_ids interleaves extra params and ids in SQL order');
         return [
             [10, 'a'],
             [20, 'b'],
@@ -108,9 +119,9 @@ $dbh->queue_prepare(sub {
 });
 
 my $detail_rows = run_query_for_ids(
-    query => 'SELECT id, val FROM detail WHERE id IN (:id_list) AND flag = ?',
+    query => 'SELECT id, val FROM detail WHERE flag = ? AND id IN (:id_list) AND trailer = ?',
     id_values => [10, 20, 30],
-    bind_params => [99],
+    bind_params => [99, 123],
 );
 
 is_deeply($detail_rows, [[10, 'a'], [20, 'b'], [30, 'c']], 'run_query_for_ids returns array rows');
