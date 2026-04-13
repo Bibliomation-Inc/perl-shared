@@ -13,7 +13,6 @@ WriteMakefile(
         'Email::MIME'           => 0,
         'Email::Sender::Simple' => 0,
         'Net::SFTP::Foreign'    => 0,
-        'Try::Tiny'             => 0,
         'XML::Simple'           => 0,
         'Test::More'            => 0,
     },
