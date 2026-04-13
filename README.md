@@ -17,12 +17,3 @@ perl Makefile.PL
 make
 make test
 ```
-
-## Versioning
-
-Use semantic version tags:
-
-- `vMAJOR.MINOR.PATCH`
-- `MAJOR`: breaking API changes
-- `MINOR`: backward-compatible features
-- `PATCH`: backward-compatible fixes
