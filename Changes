@@ -1,5 +1,8 @@
 Revision history for perl-shared
 
+0.004  2026-04-13
+    - Removed incorrect MakeMaker PM path overrides so built distributions preserve the Bibliomation::Shared namespace.
+
 0.003  2026-04-13
     - Added Archive and FileIO shared modules for tar.gz creation and text/delimited file output.
     - Added tests for archive creation and file I/O helpers.
