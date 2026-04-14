@@ -126,6 +126,7 @@ my $config = load_config('/etc/my-job.conf');
 Exports:
 
 - `get_database_configuration($opensrf_xml_path)`
+- `get_org_units($dbh, $librarynames, $include_descendants)`
 
 Behavior:
 
@@ -133,23 +134,6 @@ Behavior:
 - Looks for database settings in `open-ils.cstore`, then `open-ils.storage`,
   then reporter config.
 - Returns the normalized database config hash shown above.
-
-Example:
-
-```perl
-use Bibliomation::Shared::Evergreen qw(get_database_configuration);
-
-my $db_config = get_database_configuration('/openils/conf/opensrf.xml');
-```
-
-### `Bibliomation::Shared::EvergreenOrgUnits`
-
-Exports:
-
-- `get_org_units($dbh, $librarynames, $include_descendants)`
-
-Behavior:
-
 - Resolves one or more Evergreen org unit shortnames to their numeric IDs.
 - Accepts a comma-delimited shortname string and normalizes whitespace and case.
 - Optionally includes descendants from `actor.org_unit_descendants`.
@@ -158,8 +142,9 @@ Behavior:
 Example:
 
 ```perl
-use Bibliomation::Shared::EvergreenOrgUnits qw(get_org_units);
+use Bibliomation::Shared::Evergreen qw(get_database_configuration get_org_units);
 
+my $db_config = get_database_configuration('/openils/conf/opensrf.xml');
 my $org_units = get_org_units($dbh, 'BR1, BR2', 1);
 ```
 
