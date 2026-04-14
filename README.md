@@ -155,6 +155,7 @@ Exports:
 - `setup_database_connection($db_config)`
 - `run_sql($sql, @bind_params)`
 - `run_sql_file($path, @bind_params)`
+- `load_sql_file($path, %opts)`
 - `stream_id_chunks(%args)`
 - `run_query_for_ids(%args)`
 - `run_chunked_id_query(%args)`
@@ -171,6 +172,10 @@ Behavior:
   non-result statements.
 - `run_sql_file` loads SQL from disk, strips block comments, line comments, and standalone
   `BEGIN`/`COMMIT`/`ROLLBACK` wrappers, then executes the remaining statement.
+- `load_sql_file` loads and cleans SQL like `run_sql_file`, but returns the SQL string
+  instead of executing it. Accepts an optional `tokens` hash for placeholder substitution.
+  Dies if any `:token_name` placeholders in the SQL are missing from the tokens hash, or
+  if any provided tokens are not found in the SQL.
 - `stream_id_chunks` streams a large ID query without materializing the full ID list first.
 - `run_query_for_ids` expands `:id_list` into the right number of placeholders and preserves
   bind parameter order based on the SQL text.
@@ -182,12 +187,19 @@ Example:
 ```perl
 use Bibliomation::Shared::Database qw(
     setup_database_connection
+    load_sql_file
     run_chunked_id_query
 );
 use Bibliomation::Shared::Evergreen qw(get_database_configuration);
 
 my $db_config = get_database_configuration('/openils/conf/opensrf.xml');
 setup_database_connection($db_config);
+
+# Load SQL with token substitution
+my $sql = load_sql_file('sql/items.sql', tokens => {
+    ':org_units' => '1,2,3',
+    ':last_run'  => '2024-06-15',
+});
 
 my $rows = run_chunked_id_query(
     id_sql             => 'SELECT id FROM actor.usr WHERE deleted = FALSE',

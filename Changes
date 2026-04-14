@@ -1,5 +1,10 @@
 Revision history for perl-shared
 
+0.006  2026-04-14
+    - Added load_sql_file() to Database module for loading SQL with token substitution.
+    - Validates that all :token_name placeholders have values and no extra tokens are provided.
+    - Standardized token names: :org_units for org unit IDs, :last_run for timestamps.
+
 0.005  2026-04-14
     - Collapsed Evergreen org-unit lookup into Bibliomation::Shared::Evergreen and removed the standalone EvergreenOrgUnits module.
     - Merged org-unit coverage into the Evergreen test suite and updated module load checks.

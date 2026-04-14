@@ -7,6 +7,7 @@ use Bibliomation::Shared::Database qw(
     setup_database_connection
     run_sql
     run_sql_file
+    load_sql_file
     stream_id_chunks
     run_query_for_ids
     run_chunked_id_query
@@ -84,6 +85,50 @@ $dbh->queue_prepare(sub {
 
 my $file_rows = run_sql_file($sql_path, 42);
 is_deeply($file_rows, [{ id => 9 }], 'run_sql_file executes loaded SQL');
+
+# Test load_sql_file with token substitution
+my ($token_fh, $token_path) = tempfile();
+print {$token_fh} <<'SQL';
+-- Extract query with tokens
+SELECT id, name FROM items
+WHERE org_unit IN (:org_units)
+AND updated_at > ':last_run'
+SQL
+close $token_fh;
+
+my $loaded_sql = load_sql_file($token_path, tokens => {
+    ':org_units' => '1,2,3',
+    ':last_run'  => '2024-06-15',
+});
+like($loaded_sql, qr/org_unit IN \(1,2,3\)/, 'load_sql_file substitutes :org_units token');
+like($loaded_sql, qr/updated_at > '2024-06-15'/, 'load_sql_file substitutes :last_run token');
+unlike($loaded_sql, qr/:org_units/, 'load_sql_file removes original :org_units token');
+unlike($loaded_sql, qr/:last_run/, 'load_sql_file removes original :last_run token');
+unlike($loaded_sql, qr/Extract query/, 'load_sql_file strips comments');
+
+# Test validation: missing token values
+{
+    my $err = exception { load_sql_file($token_path, tokens => { ':org_units' => '1,2,3' }) };
+    like($err, qr/missing values for tokens:.*:last_run/, 'load_sql_file dies on missing token value');
+}
+
+# Test validation: extra tokens not in SQL
+{
+    my $err = exception { load_sql_file($token_path, tokens => {
+        ':org_units' => '1,2,3',
+        ':last_run'  => '2024-06-15',
+        ':bogus'     => 'nope',
+    }) };
+    like($err, qr/tokens not found in SQL:.*:bogus/, 'load_sql_file dies on extra token');
+}
+
+# Test SQL file with no tokens
+my ($plain_fh, $plain_path) = tempfile();
+print {$plain_fh} "SELECT id FROM simple_table WHERE active = true\n";
+close $plain_fh;
+
+my $plain_sql = load_sql_file($plain_path);
+like($plain_sql, qr/simple_table/, 'load_sql_file works with no tokens');
 
 $dbh->queue_prepare(sub {
     my ($self, $sql) = @_;

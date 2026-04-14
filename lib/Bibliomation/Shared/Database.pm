@@ -9,6 +9,7 @@ our @EXPORT_OK = qw(
     setup_database_connection
     run_sql
     run_sql_file
+    load_sql_file
     stream_id_chunks
     run_query_for_ids
     run_chunked_id_query
@@ -81,6 +82,39 @@ sub run_sql_file {
 
     my $sql = _load_sql_file($file_path);
     return run_sql($sql, @params);
+}
+
+sub load_sql_file {
+    my ($file_path, %opts) = @_;
+
+    my $sql = _load_sql_file($file_path);
+
+    # Token substitution
+    my $tokens = $opts{tokens} || {};
+
+    # Find all :token_name patterns in SQL
+    my %found_tokens;
+    $found_tokens{$_} = 1 for ($sql =~ /(:\w+)/g);
+
+    # Validate: every found token must have a provided value
+    my @missing = grep { !exists $tokens->{$_} } keys %found_tokens;
+    if (@missing) {
+        die "load_sql_file: missing values for tokens: " . join(', ', sort @missing) . "\n";
+    }
+
+    # Validate: every provided token must exist in SQL
+    my @extra = grep { !exists $found_tokens{$_} } keys %$tokens;
+    if (@extra) {
+        die "load_sql_file: tokens not found in SQL: " . join(', ', sort @extra) . "\n";
+    }
+
+    # Perform substitution
+    for my $token (keys %$tokens) {
+        my $value = $tokens->{$token};
+        $sql =~ s/\Q$token\E/$value/g;
+    }
+
+    return $sql;
 }
 
 sub stream_id_chunks {
