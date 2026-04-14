@@ -26,10 +26,12 @@ use lib '/path/to/perl-shared/lib';
 ## Design Rules
 
 - All shared modules live under the `Bibliomation::Shared::*` namespace.
+- Shared modules must not depend on other `Bibliomation::Shared::*` modules.
 - Utility functions are exported explicitly with `@EXPORT_OK`; consumers should import only
   what they use.
 - Runtime failures raise exceptions with `die`. Callers should wrap external effects in
   `eval` or `Try::Tiny` when recovery is needed.
+- Shared modules should not perform application logging; consumers own logging behavior.
 - Database configuration is normalized to the same shape everywhere:
 
 ```perl
@@ -138,6 +140,27 @@ Example:
 use Bibliomation::Shared::Evergreen qw(get_database_configuration);
 
 my $db_config = get_database_configuration('/openils/conf/opensrf.xml');
+```
+
+### `Bibliomation::Shared::EvergreenOrgUnits`
+
+Exports:
+
+- `get_org_units($dbh, $librarynames, $include_descendants)`
+
+Behavior:
+
+- Resolves one or more Evergreen org unit shortnames to their numeric IDs.
+- Accepts a comma-delimited shortname string and normalizes whitespace and case.
+- Optionally includes descendants from `actor.org_unit_descendants`.
+- Returns a sorted, deduplicated arrayref of org unit IDs.
+
+Example:
+
+```perl
+use Bibliomation::Shared::EvergreenOrgUnits qw(get_org_units);
+
+my $org_units = get_org_units($dbh, 'BR1, BR2', 1);
 ```
 
 ### `Bibliomation::Shared::Database`

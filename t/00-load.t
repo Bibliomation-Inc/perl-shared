@@ -8,6 +8,7 @@ use_ok('Bibliomation::Shared::ConfigFile');
 use_ok('Bibliomation::Shared::Database');
 use_ok('Bibliomation::Shared::Email');
 use_ok('Bibliomation::Shared::Evergreen');
+use_ok('Bibliomation::Shared::EvergreenOrgUnits');
 use_ok('Bibliomation::Shared::FileIO');
 use_ok('Bibliomation::Shared::Logging');
 
