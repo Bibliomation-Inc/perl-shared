@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME         => 'Bibliomation::Shared',
-    VERSION      => '0.004',
+    VERSION      => '0.005',
     ABSTRACT     => 'Shared Perl utility modules',
     AUTHOR       => 'Bibliomation',
     LICENSE      => 'perl',

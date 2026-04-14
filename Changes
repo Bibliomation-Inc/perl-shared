@@ -1,5 +1,10 @@
 Revision history for perl-shared
 
+0.005  2026-04-14
+    - Collapsed Evergreen org-unit lookup into Bibliomation::Shared::Evergreen and removed the standalone EvergreenOrgUnits module.
+    - Merged org-unit coverage into the Evergreen test suite and updated module load checks.
+    - Documented the shared-library design rules that shared modules must not depend on one another and must not perform application logging.
+
 0.004  2026-04-13
     - Removed incorrect MakeMaker PM path overrides so built distributions preserve the Bibliomation::Shared namespace.
 
